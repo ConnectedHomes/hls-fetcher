@@ -18,7 +18,8 @@ var requestFile = function(uri) {
     uri: uri,
     timeout: 60000, // 60 seconds timeout
     encoding: null, // treat all responses as a buffer
-    retryDelay: 1000 // retry 1s after on failure
+    retryDelay: 1000, // retry 1s after on failure
+    headers
   };
   return new Promise(function(resolve, reject) {
     request(options, function(err, response, body) {
@@ -47,7 +48,7 @@ var decryptFile = function(content, encryption) {
   });
 };
 
-var WriteData = function(decrypt, concurrency, resources) {
+var WriteData = function(decrypt, concurrency, resources, headers) {
   var inProgress = [];
   var operations = [];
 
@@ -56,7 +57,7 @@ var WriteData = function(decrypt, concurrency, resources) {
       operations.push(function() { return writeFile(r.file, r.content); });
     } else if (r.key && decrypt) {
       operations.push(function() {
-        return requestFile(r.uri).then(function(content) {
+        return requestFile(r.uri, headers).then(function(content) {
           return decryptFile(content, r.key);
         }).then(function(content) {
           return writeFile(r.file, content);
@@ -64,7 +65,7 @@ var WriteData = function(decrypt, concurrency, resources) {
       });
     } else if (inProgress.indexOf(r.uri) === -1) {
       operations.push(function() {
-        return requestFile(r.uri).then(function(content) {
+        return requestFile(r.uri, headers).then(function(content) {
           return writeFile(r.file, content);
         });
       });
