@@ -1,5 +1,4 @@
 var Promise = require('bluebird');
-var mkdirp = Promise.promisify(require('mkdirp'));
 var request = require('requestretry');
 var fs = Promise.promisifyAll(require('react-native-fs'));
 var aesDecrypter = require('aes-decrypter').Decrypter;
