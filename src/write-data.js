@@ -42,7 +42,7 @@ var toArrayBuffer = function(buffer) {
 
 var decryptFile = function(content, encryption) {
   return new Promise(function(resolve, reject) {
-    var d = new aesDecrypter(toArrayBuffer(content), encryption.bytes, encryption.iv, function(err, bytes) {
+    var d = new aesDecrypter(new DataView(toArrayBuffer(content)), encryption.bytes, encryption.iv, function(err, bytes) {
       return resolve(new Buffer(bytes));
     });
   });
