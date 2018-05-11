@@ -2,7 +2,6 @@ var m3u8 = require('m3u8-parser');
 var syncRequest = require('sync-request');
 var url = require('url');
 var path = require('path');
-var fs = require('fs');
 
 var joinURI = function(absolute, relative) {
   var parse = url.parse(absolute);
@@ -96,7 +95,7 @@ var walkPlaylist = function(decrypt, basedir, uri, headers, parent, manifestInde
   var resources = [];
   var manifest  = {};
   manifest.uri  = uri;
-  manifest.file = path.join(basedir, path.basename(uri));
+  manifest.file = path.join(basedir, url.parse(uri).pathname);
   resources.push(manifest);
 
   // if we are not the master playlist
@@ -129,7 +128,7 @@ var walkPlaylist = function(decrypt, basedir, uri, headers, parent, manifestInde
       return;
     }
     // put segments in manifest-name/segment-name.ts
-    s.file = path.join(path.dirname(manifest.file), path.basename(s.uri));
+    s.file = path.join(path.dirname(manifest.file), url.parse(s.uri).pathname);
     if (!isAbsolute(s.uri)) {
       s.uri = joinURI(path.dirname(manifest.uri), s.uri);
     }

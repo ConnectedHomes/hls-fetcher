@@ -1,13 +1,13 @@
 var Promise = require('bluebird');
 var mkdirp = Promise.promisify(require('mkdirp'));
 var request = require('requestretry');
-var fs = Promise.promisifyAll(require('fs'));
+var fs = Promise.promisifyAll(require('react-native-fs'));
 var aesDecrypter = require('aes-decrypter').Decrypter;
 var path = require('path');
 
 var writeFile = function(file, content) {
-  return mkdirp(path.dirname(file)).then(function() {
-    return fs.writeFileAsync(file, content);
+  return fs.mkdir(path.dirname(file), { NSURLIsExcludedFromBackupKey: true }).then(function() {
+    return fs.writeFile(file, content);
   }).then(function() {
     console.log('Finished: ' + path.relative('.', file));
   });
