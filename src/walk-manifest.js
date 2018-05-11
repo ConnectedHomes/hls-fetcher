@@ -44,7 +44,7 @@ const parseManifest = function (content) {
   return parser.manifest;
 };
 
-const parseKey = function (basedir, decrypt, resources, manifest, parent) {
+const parseKey = function (basedir, decrypt, resources, manifest, parent, headers) {
   if (!manifest.parsed.segments[0] || !manifest.parsed.segments[0].key) {
     return {};
   }
@@ -73,8 +73,9 @@ const parseKey = function (basedir, decrypt, resources, manifest, parent) {
     return key;
   }
 
+
   // get the aes key
-  const keyContent = syncRequest('GET', keyUri).getBody();
+  const keyContent = syncRequest('GET', keyUri, { headers }).getBody();
   key.bytes = new Uint32Array([
     keyContent.readUInt32BE(0),
     keyContent.readUInt32BE(4),
@@ -92,11 +93,11 @@ const parseKey = function (basedir, decrypt, resources, manifest, parent) {
   return key;
 };
 
-var walkPlaylist = function (decrypt, basedir, uri, parent, manifestIndex) {
+var walkPlaylist = function (decrypt, basedir, uri, headers, parent, manifestIndex) {
   let resources = [];
   const manifest = {};
   manifest.uri = uri;
-  manifest.file = path.join(basedir, path.basename(uri));
+  manifest.file = path.join(basedir, url.parse(uri).pathname);
   resources.push(manifest);
 
   // if we are not the master playlist
@@ -114,14 +115,14 @@ var walkPlaylist = function (decrypt, basedir, uri, parent, manifestIndex) {
     parent.content = new Buffer(parent.content.toString().replace(uri, path.relative(path.dirname(parent.file), manifest.file)));
   }
 
-  manifest.content = syncRequest('GET', manifest.uri).getBody();
+  manifest.content = syncRequest('GET', manifest.uri, { headers }).getBody();
   manifest.parsed = parseManifest(manifest.content);
   manifest.parsed.segments = manifest.parsed.segments || [];
   manifest.parsed.playlists = manifest.parsed.playlists || [];
   manifest.parsed.mediaGroups = manifest.parsed.mediaGroups || {};
 
   const playlists = manifest.parsed.playlists.concat(mediaGroupPlaylists(manifest.parsed.mediaGroups));
-  const key = parseKey(basedir, decrypt, resources, manifest, parent);
+  const key = parseKey(basedir, decrypt, resources, manifest, parent, headers);
 
   // SEGMENTS
   manifest.parsed.segments.forEach((s, i) => {
@@ -129,7 +130,7 @@ var walkPlaylist = function (decrypt, basedir, uri, parent, manifestIndex) {
       return;
     }
     // put segments in manifest-name/segment-name.ts
-    s.file = path.join(path.dirname(manifest.file), path.basename(s.uri));
+    s.file = path.join(path.dirname(manifest.file), url.parse(s.uri).pathname);
     if (!isAbsolute(s.uri)) {
       s.uri = joinURI(path.dirname(manifest.uri), s.uri);
     }

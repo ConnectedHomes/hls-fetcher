@@ -17,6 +17,7 @@ const requestFile = function (uri) {
     timeout: 60000, // 60 seconds timeout
     encoding: null, // treat all responses as a buffer
     retryDelay: 1000, // retry 1s after on failure
+    headers,
   };
   return new Promise(((resolve, reject) => {
     request(options, (err, response, body) => {
@@ -39,11 +40,13 @@ const toArrayBuffer = function (buffer) {
 
 const decryptFile = function (content, encryption) {
   return new Promise(((resolve, reject) => {
-    const d = new aesDecrypter(toArrayBuffer(content), encryption.bytes, encryption.iv, ((err, bytes) => resolve(new Buffer(bytes))));
+    const d = new aesDecrypter(new DataView(toArrayBuffer(content)), encryption.bytes, encryption.iv, ((err, bytes) => {
+      resolve(new Buffer(bytes));
+    }));
   }));
 };
 
-const WriteData = function (decrypt, concurrency, resources) {
+const WriteData = function (decrypt, concurrency, resources, headers) {
   const inProgress = [];
   const operations = [];
 
@@ -51,9 +54,9 @@ const WriteData = function (decrypt, concurrency, resources) {
     if (r.content) {
       operations.push(() => writeFile(r.file, r.content));
     } else if (r.key && decrypt) {
-      operations.push(() => requestFile(r.uri).then(content => decryptFile(content, r.key)).then(content => writeFile(r.file, content)));
+      operations.push(() => requestFile(r.uri, headers).then(content => decryptFile(content, r.key)).then(content => writeFile(r.file, content)));
     } else if (inProgress.indexOf(r.uri) === -1) {
-      operations.push(() => requestFile(r.uri).then(content => writeFile(r.file, content)));
+      operations.push(() => requestFile(r.uri, headers).then(content => writeFile(r.file, content)));
       inProgress.push(r.uri);
     }
   });
