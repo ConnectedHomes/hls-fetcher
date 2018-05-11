@@ -1,5 +1,5 @@
 var Promise = require('bluebird');
-var request = require('requestretry');
+var request = require('sync-request');
 var fs = Promise.promisifyAll(require('react-native-fs'));
 var aesDecrypter = require('aes-decrypter').Decrypter;
 var path = require('path');
@@ -17,7 +17,6 @@ var requestFile = function(uri) {
     uri: uri,
     timeout: 60000, // 60 seconds timeout
     encoding: null, // treat all responses as a buffer
-    retryDelay: 1000, // retry 1s after on failure
     headers
   };
   return new Promise(function(resolve, reject) {
