@@ -31,19 +31,19 @@ var requestFile = function(uri) {
 };
 
 var toArrayBuffer = function(buffer) {
-    var ab = new ArrayBuffer(buffer.length);
-    var view = new Uint8Array(ab);
-    for (var i = 0; i < buffer.length; ++i) {
-        view[i] = buffer[i];
-    }
-    return ab;
+  var ab = new ArrayBuffer(buffer.length);
+  var view = new Uint8Array(ab);
+  for (var i = 0; i < buffer.length; ++i) {
+    view[i] = buffer[i];
+  }
+  return ab;
 };
 
 var decryptFile = function(content, encryption) {
   return new Promise(function(resolve, reject) {
     var d = new aesDecrypter(toArrayBuffer(content), encryption.bytes, encryption.iv, function(err, bytes) {
       return resolve(new Buffer(bytes));
-    })
+    });
   });
 };
 
@@ -59,7 +59,7 @@ var WriteData = function(decrypt, concurrency, resources) {
         return requestFile(r.uri).then(function(content) {
           return decryptFile(content, r.key);
         }).then(function(content) {
-          return writeFile(r.file, content)
+          return writeFile(r.file, content);
         });
       });
     } else if (inProgress.indexOf(r.uri) === -1) {
