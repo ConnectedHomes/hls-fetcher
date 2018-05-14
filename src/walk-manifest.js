@@ -145,7 +145,7 @@ var walkPlaylist = function(decrypt, basedir, uri, headers, parent, manifestInde
     if (!p.uri) {
       return;
     }
-    resources = resources.concat(walkPlaylist(decrypt, basedir, p.uri, manifest, z));
+    resources = resources.concat(walkPlaylist(decrypt, basedir, p.uri, headers, manifest, z));
   });
 
   return resources;
