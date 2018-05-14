@@ -23,7 +23,7 @@ var Utils = {
   fileExists: function(file) {
     try {
       return fs.statSync(file).isFile();
-    } catch(e) {
+    } catch (e) {
       return false;
     }
   },
